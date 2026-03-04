@@ -28,7 +28,12 @@ export async function POST(req: Request) {
         const encryptedEmail = encryptDeterministic(email);
 
         // specific validation: Check if user exists
-        const existingUser = await User.findOne({ email: encryptedEmail });
+        const existingUser = await User.findOne({
+            $or: [
+                { email: encryptedEmail },
+                { email: email }
+            ]
+        });
         if (existingUser) {
             return NextResponse.json(
                 { error: 'Email already in use' },

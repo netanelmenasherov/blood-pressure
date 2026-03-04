@@ -26,7 +26,12 @@ export async function POST(req: Request) {
         const { email, password } = parsed.data;
         const encryptedEmail = encryptDeterministic(email);
 
-        const user = await User.findOne({ email: encryptedEmail });
+        const user = await User.findOne({
+            $or: [
+                { email: encryptedEmail },
+                { email: email }
+            ]
+        });
         if (!user) {
             return NextResponse.json(
                 { error: 'Invalid credentials' },
