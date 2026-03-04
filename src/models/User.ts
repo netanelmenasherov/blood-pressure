@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import { encrypt, decrypt, encryptDeterministic, decryptDeterministic } from '@/lib/encryption';
 
 export interface IUser extends Document {
     name: string;
@@ -12,19 +13,17 @@ export interface IUser extends Document {
 
 const UserSchema: Schema<IUser> = new Schema({
     name: {
-        type: String,
+        type: String as any,
         required: [true, 'Please provide a name'],
-        maxlength: [60, 'Name cannot be more than 60 characters'],
+        set: ((val: any) => encrypt(val)) as any,
+        get: ((val: any) => decrypt(val)) as any,
     },
     email: {
-        type: String,
+        type: String as any,
         required: [true, 'Please provide an email'],
         unique: true,
-        maxlength: [100, 'Email cannot be more than 100 characters'],
-        match: [
-            /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-            'Please provide a valid email',
-        ],
+        set: ((val: any) => encryptDeterministic(val)) as any,
+        get: ((val: any) => decryptDeterministic(val)) as any,
     },
     passwordHash: {
         type: String,
@@ -40,6 +39,8 @@ const UserSchema: Schema<IUser> = new Schema({
     },
 }, {
     timestamps: true, // Automatically manages createdAt and updatedAt
+    toJSON: { getters: true }, // Ensure getters run on output
+    toObject: { getters: true },
 });
 
 // Check if the model already exists to prevent overwrite errors during hot reloading

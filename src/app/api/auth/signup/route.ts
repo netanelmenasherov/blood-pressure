@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { hashPassword, signToken, setSession } from '@/lib/auth';
+import { encryptDeterministic } from '@/lib/encryption';
 import { z } from 'zod';
 
 const signupSchema = z.object({
@@ -24,9 +25,10 @@ export async function POST(req: Request) {
         }
 
         const { name, email, password } = parsed.data;
+        const encryptedEmail = encryptDeterministic(email);
 
         // specific validation: Check if user exists
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: encryptedEmail });
         if (existingUser) {
             return NextResponse.json(
                 { error: 'Email already in use' },

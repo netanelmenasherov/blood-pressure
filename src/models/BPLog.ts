@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { AlertLevel } from '@/lib/alerts';
+import { encrypt, decrypt, encryptNumber, decryptNumber } from '@/lib/encryption';
 
 export interface IBPLog extends Document {
     userId: mongoose.Types.ObjectId;
@@ -21,49 +22,56 @@ const BPLogSchema: Schema<IBPLog> = new Schema({
         required: [true, 'Please provide a userId'],
     },
     systolic: {
-        type: Number,
+        type: String as any,
         required: [true, 'Please provide systolic BP'],
-        min: [50, 'Systolic BP must be at least 50'],
-        max: [300, 'Systolic BP cannot exceed 300'],
+        set: ((val: any) => encryptNumber(val)) as any,
+        get: ((val: any) => decryptNumber(val)) as any,
     },
     diastolic: {
-        type: Number,
+        type: String as any,
         required: [true, 'Please provide diastolic BP'],
-        min: [30, 'Diastolic BP must be at least 30'],
-        max: [200, 'Diastolic BP cannot exceed 200'],
+        set: ((val: any) => encryptNumber(val)) as any,
+        get: ((val: any) => decryptNumber(val)) as any,
     },
     heartRate: {
-        type: Number,
+        type: String as any,
         required: [true, 'Please provide heart rate'],
-        min: [30, 'Heart rate must be at least 30'],
-        max: [220, 'Heart rate cannot exceed 220'],
+        set: ((val: any) => encryptNumber(val)) as any,
+        get: ((val: any) => decryptNumber(val)) as any,
     },
     sysAlert: {
-        type: String,
-        enum: Object.values(AlertLevel),
+        type: String as any,
         required: true,
+        set: ((val: any) => encrypt(val)) as any,
+        get: ((val: any) => decrypt(val)) as any,
     },
     diaAlert: {
-        type: String,
-        enum: Object.values(AlertLevel),
+        type: String as any,
         required: true,
+        set: ((val: any) => encrypt(val)) as any,
+        get: ((val: any) => decrypt(val)) as any,
     },
     hrAlert: {
-        type: String,
-        enum: Object.values(AlertLevel),
+        type: String as any,
         required: true,
+        set: ((val: any) => encrypt(val)) as any,
+        get: ((val: any) => decrypt(val)) as any,
     },
     overallAlert: {
-        type: String,
-        enum: Object.values(AlertLevel),
+        type: String as any,
         required: true,
+        set: ((val: any) => encrypt(val)) as any,
+        get: ((val: any) => decrypt(val)) as any,
     },
     note: {
-        type: String,
-        maxlength: [200, 'Note cannot be more than 200 characters'],
+        type: String as any,
+        set: ((val: any) => encrypt(val)) as any,
+        get: ((val: any) => decrypt(val)) as any,
     },
 }, {
     timestamps: true, // Automatically manages createdAt and updatedAt
+    toJSON: { getters: true }, // Ensure getters run on output
+    toObject: { getters: true },
 });
 
 // Check if the model already exists to prevent overwrite errors during hot reloading

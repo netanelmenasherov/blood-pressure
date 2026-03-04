@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { verifyPassword, signToken, setSession } from '@/lib/auth';
+import { encryptDeterministic } from '@/lib/encryption';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -23,8 +24,9 @@ export async function POST(req: Request) {
         }
 
         const { email, password } = parsed.data;
+        const encryptedEmail = encryptDeterministic(email);
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: encryptedEmail });
         if (!user) {
             return NextResponse.json(
                 { error: 'Invalid credentials' },
